@@ -27,13 +27,13 @@ int eeprom_h_add = 0;
 unsigned long real_time = 0;
 bool check_time_point = false;
 
-#define pwmMotorRight 3
-#define pwmMotorLeft 5
+#define pwmMotorRight A0
+#define pwmMotorLeft A1
 
-#define dirMotorRight 8
-#define dirMotorLeft 9
-#define linearRMo 10
-#define linearLMo 11
+#define dirMotorRight 4
+#define dirMotorLeft 5
+#define linearRMo 6
+#define linearLMo 7
 
 // the setup function runs once when you press reset or power the board
 
@@ -49,7 +49,7 @@ void setup() {
   pinMode(linearRMo, OUTPUT);
   pinMode(linearLMo, OUTPUT);
 
-
+  pinMode(LED_BUILTIN, OUTPUT);
   lcd.init();
   lcd.backlight();
   lcd.setCursor(0, 0);
@@ -58,7 +58,6 @@ void setup() {
   setupTasks();
   real_time = millis();
   read_time_eeprom();
- 
 }
 
 // the loop function runs over and over again forever
@@ -210,8 +209,11 @@ void changePwmMotor(int pwmLeft, int pwmRight) {
 
 void changeDirMotor(bool dirLeft, bool dirRight) {
 
+
   if (dirLeft) {
     digitalWrite(dirMotorLeft, LOW);
+
+
   } else {
     digitalWrite(dirMotorLeft, HIGH);
   }
@@ -220,6 +222,18 @@ void changeDirMotor(bool dirLeft, bool dirRight) {
     digitalWrite(dirMotorRight, LOW);
   } else {
     digitalWrite(dirMotorRight, HIGH);
+  }
+
+  if (dirLeft) {
+    digitalWrite(LED_BUILTIN, LOW);
+
+    delay(100);
+    digitalWrite(LED_BUILTIN, HIGH);
+
+  } else if (dirRight)
+    digitalWrite(LED_BUILTIN, HIGH);
+  else {
+    digitalWrite(LED_BUILTIN, LOW);
   }
 }
 
@@ -255,8 +269,7 @@ bool readSwitch(byte channelInput, bool defaultValue) {
 void setupTasks() {
   Exec.addTask(200, controlCarDir);      // Turn on every 2s
   Exec.addTask(200, controlMotor, 300);  // Turn off every 2s, but start 1s later
-  Exec.addTask(900, displayLCD,100);   
-
+  Exec.addTask(900, displayLCD, 100);
 }
 
 void writeIntIntoEEPROM(int address, int number) {
